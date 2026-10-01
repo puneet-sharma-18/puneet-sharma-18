@@ -42,8 +42,14 @@ export interface Cluster {
   label: string;
   kicker: string;
   color: string;
-  /** Angle (degrees, 0 = right, clockwise) where the cluster sits around the core. */
-  angle: number;
+  /** Orbit radius around the Sun (world units). Earliest chapters orbit closest. */
+  orbit: number;
+  /** Planet radius (world units). */
+  size: number;
+  /** Starting angle on the orbit, degrees. */
+  phase: number;
+  /** Visual body type. */
+  body: "rocky" | "ocean" | "cloud" | "giant" | "ringed";
 }
 
 export interface Edge {

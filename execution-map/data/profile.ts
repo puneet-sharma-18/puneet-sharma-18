@@ -19,11 +19,12 @@ export const person = {
 };
 
 export const clusters: Cluster[] = [
-  { id: "operator", label: "Operator Years", kicker: "Where the reps came from", color: "#ffb547", angle: 186 },
-  { id: "brands", label: "Brands", kicker: "Built and run with my own money", color: "#5ee38a", angle: 145 },
-  { id: "community", label: "D2C Insider", kicker: "Community, partnerships, events", color: "#ff5c9a", angle: 248 },
-  { id: "ai", label: "AI Products", kicker: "Software I designed and shipped", color: "#47d7ff", angle: 0 },
-  { id: "education", label: "Teaching", kicker: "Turning execution into curriculum", color: "#a98bff", angle: 90 },
+  // Ordered from the Sun outward, oldest chapter closest. Muted, atlas-style planet tones.
+  { id: "operator", label: "Operator Years", kicker: "Where the reps came from", color: "#c8714b", orbit: 190, size: 11, phase: 200, body: "rocky" },
+  { id: "brands", label: "Brands", kicker: "Built and run with my own money", color: "#8fae9b", orbit: 285, size: 14, phase: 120, body: "ocean" },
+  { id: "community", label: "D2C Insider", kicker: "Community, partnerships, events", color: "#d9a58e", orbit: 385, size: 16, phase: 300, body: "cloud" },
+  { id: "education", label: "Teaching", kicker: "Turning execution into curriculum", color: "#c9b68e", orbit: 485, size: 14, phase: 60, body: "ringed" },
+  { id: "ai", label: "AI Products", kicker: "Software I designed and shipped", color: "#d9a066", orbit: 590, size: 22, phase: 340, body: "giant" },
 ];
 
 export const nodes: ExecNode[] = [

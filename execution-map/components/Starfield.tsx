@@ -2,7 +2,7 @@
 
 import { useEffect, useRef } from "react";
 
-/** Drifting particle field with mouse parallax and faint constellation links. Pure canvas, no deps. */
+/** Quiet, twinkling starfield with gentle mouse parallax. Pure canvas, no deps. */
 export default function Starfield() {
   const ref = useRef<HTMLCanvasElement>(null);
 
@@ -25,7 +25,7 @@ export default function Starfield() {
       canvas.width = w * dpr;
       canvas.height = h * dpr;
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-      const count = Math.round((w * h) / 9000);
+      const count = Math.round((w * h) / 5200);
       pts = Array.from({ length: count }, () => ({
         x: Math.random() * w,
         y: Math.random() * h,
@@ -49,28 +49,18 @@ export default function Starfield() {
           p.x = (p.x + p.vx * p.z + w) % w;
           p.y = (p.y + p.vy * p.z + h) % h;
         }
-        return { x: p.x - mouse.x * 18 * p.z, y: p.y - mouse.y * 18 * p.z, z: p.z };
+        return { x: p.x - mouse.x * 10 * p.z, y: p.y - mouse.y * 10 * p.z, z: p.z };
       });
+      const tt = performance.now() / 1000;
       for (let i = 0; i < proj.length; i++) {
         const a = proj[i];
-        if (a.z > 0.6) {
-          for (let j = i + 1; j < proj.length; j++) {
-            const b = proj[j];
-            if (b.z < 0.6) continue;
-            const d = Math.hypot(a.x - b.x, a.y - b.y);
-            if (d < 110) {
-              ctx.strokeStyle = `rgba(120,200,255,${0.07 * (1 - d / 110)})`;
-              ctx.lineWidth = 0.6;
-              ctx.beginPath();
-              ctx.moveTo(a.x, a.y);
-              ctx.lineTo(b.x, b.y);
-              ctx.stroke();
-            }
-          }
-        }
-        ctx.fillStyle = `rgba(200,230,255,${0.15 + a.z * 0.5})`;
+        const tw = 0.65 + 0.35 * Math.sin(tt * (0.6 + (i % 7) * 0.25) + i);
+        const warm = i % 5 === 0;
+        ctx.fillStyle = warm
+          ? `rgba(255,226,186,${(0.25 + a.z * 0.55) * tw})`
+          : `rgba(232,232,240,${(0.12 + a.z * 0.45) * tw})`;
         ctx.beginPath();
-        ctx.arc(a.x, a.y, a.z * 1.3, 0, Math.PI * 2);
+        ctx.arc(a.x, a.y, a.z * (warm ? 1.25 : 0.95), 0, Math.PI * 2);
         ctx.fill();
       }
       raf = requestAnimationFrame(frame);

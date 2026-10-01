@@ -1,10 +1,10 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import ExecutionMap from "@/components/ExecutionMap";
+import Universe from "@/components/Universe";
 import CaseFile from "@/components/CaseFile";
 import Jarvis from "@/components/Jarvis";
-import Boot from "@/components/Boot";
+import BigBang from "@/components/BigBang";
 import Timeline from "@/components/Timeline";
 import Starfield from "@/components/Starfield";
 import Scramble from "@/components/Scramble";
@@ -18,7 +18,7 @@ import type { Cluster, ClusterId, ExecNode } from "@/lib/types";
 const MIN_YEAR = Math.min(...nodes.map((n) => n.year));
 const MAX_YEAR = Math.max(...nodes.map((n) => n.year));
 
-const CORE_CLUSTER: Cluster = { id: "operator", label: "The Operator", kicker: "", color: "#e9f6ff", angle: 0 };
+const CORE_CLUSTER: Cluster = { id: "operator", label: "The Sun", kicker: "", color: "#f0c27a", orbit: 0, size: 0, phase: 0, body: "rocky" };
 const CORE_NODE: ExecNode = {
   id: "puneet",
   title: person.name,
@@ -65,10 +65,20 @@ export default function Page() {
   const nodeById = useMemo(() => Object.fromEntries(nodes.map((n) => [n.id, n])), []);
   const clusterById = useMemo(() => Object.fromEntries(clusters.map((c) => [c.id, c])), []) as Record<ClusterId, Cluster>;
 
+  // Selecting a project flies to its planet, then opens the case file.
   const select = useCallback((id: string) => {
     setSelectedId(id);
-    setFocusCluster(null);
+    setFocusCluster(id === "puneet" ? null : (nodes.find((n) => n.id === id)?.cluster ?? null));
     setYear(MAX_YEAR);
+  }, []);
+
+  // The Big Bang plays once per browser session.
+  useEffect(() => {
+    try {
+      if (sessionStorage.getItem("bang")) setBooted(true);
+    } catch {
+      /* storage unavailable — just play it */
+    }
   }, []);
 
   // Narrow screens default to the list view.
@@ -93,15 +103,13 @@ export default function Page() {
         else if (term) setTerm(false);
         else if (ops) setOps(false);
         else if (jarvisOpen) setJarvisOpen(false);
-        else {
-          setSelectedId(null);
-          setFocusCluster(null);
-        }
+        else if (selectedId) setSelectedId(null);
+        else setFocusCluster(null);
       }
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [jarvisOpen, cmdk, term, ops]);
+  }, [jarvisOpen, cmdk, term, ops, selectedId]);
 
   const stopPlay = () => {
     if (playTimer.current) clearInterval(playTimer.current);
@@ -142,7 +150,18 @@ export default function Page() {
 
   return (
     <main className={"app" + (booted ? " booted" : "")}>
-      {!booted && <Boot onDone={() => setBooted(true)} />}
+      {!booted && (
+        <BigBang
+          onDone={() => {
+            setBooted(true);
+            try {
+              sessionStorage.setItem("bang", "1");
+            } catch {
+              /* ignore */
+            }
+          }}
+        />
+      )}
       <Starfield />
       <div className="aurora" aria-hidden="true" />
       <div className="grain" aria-hidden="true" />
@@ -189,25 +208,26 @@ export default function Page() {
       </header>
 
       {view === "map" ? (
-        <section className="stage">
+        <section className={"stage" + (focusCluster ? " focused" : "")}>
           <div className="hero-copy">
             <div className="eyebrow">
-              <span className="led up" /> EXECUTION MAP · v2026.10
+              <span className="led up" /> A SYSTEM OF {nodes.length} THINGS, ALL IN ORBIT
             </div>
             <h1>
-              <em>Don&apos;t take my word for it.</em>
+              <em>Every universe starts</em>
               <br />
+              <em>with a single point.</em>
               <span className="grad">
-                <Scramble text="Click anything." speed={40} />
+                <Scramble text="Explore mine." speed={40} />
               </span>
             </h1>
             <p>
-              {nodes.length} things I&apos;ve executed — brands, deals, events and AI systems. Each node opens a case file: what
-              it is, what I did, how it works, the numbers and the receipts. Lines show how one build led to the next.
+              The Sun is the work. Planets are the areas of work, from the operator years to AI. Every moon is something that
+              shipped. Click a planet to fly in, then click a moon to open its case file.
             </p>
           </div>
 
-          <ExecutionMap
+          <Universe
             nodes={nodes}
             clusters={clusters}
             edges={edges}
@@ -215,14 +235,16 @@ export default function Page() {
             highlightIds={highlightIds}
             year={year}
             focusCluster={focusCluster}
+            panelOpen={!!selectedId}
             onSelect={select}
-            onClusterClick={(id) => {
+            onFocus={(id) => {
               setSelectedId(null);
-              setFocusCluster((c) => (c === id ? null : id));
+              setFocusCluster(id);
             }}
           />
 
           <div className="legend">
+            <div className="legend-k">SYSTEM INDEX</div>
             {clusters.map((c) => (
               <button
                 key={c.id}
@@ -236,7 +258,9 @@ export default function Page() {
                 <i />
                 <span>
                   <b>{c.label}</b>
-                  <small>{c.kicker}</small>
+                  <small>
+                    {nodes.filter((n) => n.cluster === c.id).length} moons · {c.kicker}
+                  </small>
                 </span>
               </button>
             ))}
@@ -310,12 +334,11 @@ function ListView({ onSelect }: { onSelect: (id: string) => void }) {
     <section className="listview">
       <div className="hero-copy static">
         <div className="eyebrow">
-          <span className="led up" /> EXECUTION MAP · {nodes.length} CASE FILES
+          <span className="led up" /> A SYSTEM OF {nodes.length} THINGS, ALL IN ORBIT
         </div>
         <h1>
-          <em>Don&apos;t take my word for it.</em>
-          <br />
-          <span className="grad">Open anything.</span>
+          <em>Every universe starts with a single point.</em>
+          <span className="grad">Explore mine.</span>
         </h1>
       </div>
       {clusters.map((c) => (

@@ -1,5 +1,7 @@
 # Puneet Sharma: Execution Map
 
+**Concept: Puneet's Universe.** The page opens with a Big Bang (a single point of light, a flash, then expanding matter that cools into stars). It settles into a solar system: Puneet is the Sun, each area of work is a planet, and every project is a moon. Clicking a planet flies the camera in, Google Earth style, with breadcrumbs, coordinates, a scale bar, a compass and zoom controls. Clicking a moon opens its case file. The colour palette is warm ink, ivory, sunlight and muted planet tones, chosen to avoid the neon look most AI products use.
+
 This is a portfolio page for a recruiter or interviewer who wants proof that the work happened. Every node on the map is something that exists outside a slide deck. Click a node to open its case file: **Brief · What I executed · How it works · Numbers · Receipts**. The glowing lines (the "Execution DNA") show how one build led to the next. **Jarvis** is the AI on the page. Ask it anything about Puneet and it answers with buttons that move the map to the project it is talking about.
 
 ## Run locally

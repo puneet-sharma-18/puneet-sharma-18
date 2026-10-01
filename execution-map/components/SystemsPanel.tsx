@@ -23,7 +23,7 @@ const DAY = 86400000;
 const days = shiplog.days as Record<string, number>;
 
 // Sequential single-hue ramp (dim → bright cyan) for commit intensity.
-const RAMP = ["rgba(71,215,255,0.07)", "rgba(71,215,255,0.28)", "rgba(71,215,255,0.5)", "rgba(71,215,255,0.75)", "#47d7ff"];
+const RAMP = ["rgba(240,194,122,0.07)", "rgba(240,194,122,0.28)", "rgba(240,194,122,0.5)", "rgba(240,194,122,0.75)", "#f0c27a"];
 const bucket = (n: number) => (n === 0 ? 0 : n < 4 ? 1 : n < 10 ? 2 : n < 25 ? 3 : 4);
 const fmt = (d: Date) => d.toLocaleDateString("en-IN", { day: "numeric", month: "short" });
 
