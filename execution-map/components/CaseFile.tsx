@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import type { Cluster, Edge, ExecNode } from "@/lib/types";
+import Scramble from "./Scramble";
 
 interface Props {
   node: ExecNode;
@@ -40,12 +41,16 @@ export default function CaseFile({ node, cluster, edges, nodeById, onClose, onJu
     <aside className="casefile" style={{ ["--accent" as string]: cluster.color }} aria-label={`${node.title} case file`}>
       <header>
         <div className="cf-kicker">
-          <span>CASE FILE · {cluster.label.toUpperCase()}</span>
+          <span>
+            CASE FILE · {cluster.label.toUpperCase()} · #{node.id.slice(0, 3).toUpperCase()}-{node.year}
+          </span>
           <button className="icon-btn" onClick={onClose} aria-label="Close case file">
             ✕
           </button>
         </div>
-        <h2>{node.title}</h2>
+        <h2>
+          <Scramble text={node.title} />
+        </h2>
         <p className="cf-tagline">{node.tagline}</p>
         <div className="cf-badges">
           <span className={"badge st-" + node.status}>● {STATUS_LABEL[node.status]}</span>
@@ -100,7 +105,8 @@ export default function CaseFile({ node, cluster, edges, nodeById, onClose, onJu
         {tab === "how" && (
           <>
             {node.how && (
-              <div className="flow">
+              <div className="flow" style={{ ["--steps" as string]: node.how.length }}>
+                <span className="flow-packet" />
                 {node.how.map((s, i) => (
                   <div key={i} className="flow-step" style={{ animationDelay: `${i * 90}ms` }}>
                     <span className="flow-dot" />

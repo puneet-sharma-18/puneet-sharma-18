@@ -6,6 +6,12 @@ import CaseFile from "@/components/CaseFile";
 import Jarvis from "@/components/Jarvis";
 import Boot from "@/components/Boot";
 import Timeline from "@/components/Timeline";
+import Starfield from "@/components/Starfield";
+import Scramble from "@/components/Scramble";
+import CommandPalette, { type Action } from "@/components/CommandPalette";
+import Terminal from "@/components/Terminal";
+import SystemsPanel, { useSystems } from "@/components/SystemsPanel";
+import shiplog from "@/data/shiplog.json";
 import { chapters, clusters, edges, headline, nodes, person } from "@/data/profile";
 import type { Cluster, ClusterId, ExecNode } from "@/lib/types";
 
@@ -50,6 +56,10 @@ export default function Page() {
   const [pending, setPending] = useState<string | null>(null);
   const [highlightIds, setHighlightIds] = useState<string[]>([]);
   const [view, setView] = useState<"map" | "list">("map");
+  const [cmdk, setCmdk] = useState(false);
+  const [term, setTerm] = useState(false);
+  const [ops, setOps] = useState(false);
+  const systems = useSystems();
   const playTimer = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const nodeById = useMemo(() => Object.fromEntries(nodes.map((n) => [n.id, n])), []);
@@ -69,11 +79,20 @@ export default function Page() {
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       const typing = (e.target as HTMLElement)?.tagName === "INPUT";
-      if (e.key === "/" && !typing) {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
+        e.preventDefault();
+        setCmdk((v) => !v);
+      } else if (e.key === "/" && !typing) {
         e.preventDefault();
         setJarvisOpen(true);
+      } else if (e.key === "`" && !typing) {
+        e.preventDefault();
+        setTerm(true);
       } else if (e.key === "Escape") {
-        if (jarvisOpen) setJarvisOpen(false);
+        if (cmdk) setCmdk(false);
+        else if (term) setTerm(false);
+        else if (ops) setOps(false);
+        else if (jarvisOpen) setJarvisOpen(false);
         else {
           setSelectedId(null);
           setFocusCluster(null);
@@ -82,7 +101,7 @@ export default function Page() {
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [jarvisOpen]);
+  }, [jarvisOpen, cmdk, term, ops]);
 
   const stopPlay = () => {
     if (playTimer.current) clearInterval(playTimer.current);
@@ -109,10 +128,24 @@ export default function Page() {
   const selected = selectedId === "puneet" ? CORE_NODE : selectedId ? nodeById[selectedId] : null;
   const selectedCluster = selectedId === "puneet" ? CORE_CLUSTER : selected ? clusterById[selected.cluster] : null;
   const liveCount = nodes.filter((n) => n.status === "live").length;
+  const up = systems?.filter((r) => r.state === "up").length ?? 0;
+
+  const actions: Action[] = [
+    { id: "a-jarvis", label: "Ask Jarvis", hint: "AI that knows every project · /", run: () => setJarvisOpen(true) },
+    { id: "a-play", label: "Play the journey", hint: "2016 → 2026, chapter by chapter", run: () => togglePlay() },
+    { id: "a-ops", label: "Open ops console", hint: "Live systems + ship log", run: () => setOps(true) },
+    { id: "a-term", label: "Open terminal", hint: "For the engineers in the room · `", run: () => setTerm(true) },
+    { id: "a-list", label: view === "map" ? "Switch to list view" : "Switch to map view", hint: "Same data, different lens", run: () => setView(view === "map" ? "list" : "map") },
+    { id: "a-mail", label: "Copy email", hint: person.email, run: () => navigator.clipboard?.writeText(person.email) },
+    { id: "a-me", label: "Who is Puneet?", hint: "Open the core case file", run: () => select("puneet") },
+  ];
 
   return (
     <main className={"app" + (booted ? " booted" : "")}>
       {!booted && <Boot onDone={() => setBooted(true)} />}
+      <Starfield />
+      <div className="aurora" aria-hidden="true" />
+      <div className="grain" aria-hidden="true" />
 
       <header className="topbar">
         <div className="brand" onClick={() => select("puneet")} role="button" tabIndex={0}>
@@ -134,6 +167,17 @@ export default function Page() {
             <span>live right now</span>
           </div>
         </div>
+        <button className="pill sys-pill" onClick={() => setOps(true)} title="Live production systems + ship log">
+          <span className={"led " + (systems ? (up > 0 ? "up" : "unreachable") : "")} />
+          {systems ? (up > 0 ? `${up}/${systems.length} systems live` : "ops console") : "pinging…"}
+          <span className="pill-sub">{shiplog.total.toLocaleString("en-IN")} commits</span>
+        </button>
+        <button className="pill" onClick={() => setCmdk(true)} aria-label="Open command palette">
+          <kbd>⌘K</kbd>
+        </button>
+        <button className="pill" onClick={() => setTerm(true)} aria-label="Open terminal" title="Terminal">
+          <span className="mono">&gt;_</span>
+        </button>
         <div className="view-toggle" role="tablist">
           <button className={view === "map" ? "on" : ""} onClick={() => setView("map")}>
             MAP
@@ -147,10 +191,15 @@ export default function Page() {
       {view === "map" ? (
         <section className="stage">
           <div className="hero-copy">
+            <div className="eyebrow">
+              <span className="led up" /> EXECUTION MAP · v2026.10
+            </div>
             <h1>
-              Don&apos;t take my word for it.
+              <em>Don&apos;t take my word for it.</em>
               <br />
-              <span>Click anything.</span>
+              <span className="grad">
+                <Scramble text="Click anything." speed={40} />
+              </span>
             </h1>
             <p>
               {nodes.length} things I&apos;ve executed — brands, deals, events and AI systems. Each node opens a case file: what
@@ -191,7 +240,9 @@ export default function Page() {
                 </span>
               </button>
             ))}
-            <div className="legend-hint">drag to pan · scroll to zoom · press / for Jarvis</div>
+            <div className="legend-hint">
+              <kbd>drag</kbd> pan · <kbd>scroll</kbd> zoom · <kbd>⌘K</kbd> search · <kbd>/</kbd> jarvis · <kbd>`</kbd> terminal
+            </div>
           </div>
 
           <Timeline
@@ -223,6 +274,18 @@ export default function Page() {
         />
       )}
 
+      <CommandPalette open={cmdk} onClose={() => setCmdk(false)} actions={actions} onOpenNode={select} />
+      <Terminal open={term} onClose={() => setTerm(false)} onOpenNode={select} onAsk={(q) => setPending(q)} onPlay={togglePlay} />
+      <SystemsPanel
+        results={systems}
+        open={ops}
+        onClose={() => setOps(false)}
+        onJump={(id) => {
+          setOps(false);
+          select(id);
+        }}
+      />
+
       <Jarvis
         open={jarvisOpen}
         setOpen={setJarvisOpen}
@@ -246,8 +309,13 @@ function ListView({ onSelect }: { onSelect: (id: string) => void }) {
   return (
     <section className="listview">
       <div className="hero-copy static">
+        <div className="eyebrow">
+          <span className="led up" /> EXECUTION MAP · {nodes.length} CASE FILES
+        </div>
         <h1>
-          Don&apos;t take my word for it. <span>Open anything.</span>
+          <em>Don&apos;t take my word for it.</em>
+          <br />
+          <span className="grad">Open anything.</span>
         </h1>
       </div>
       {clusters.map((c) => (

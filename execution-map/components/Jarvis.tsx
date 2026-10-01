@@ -33,6 +33,10 @@ export default function Jarvis({ open, setOpen, pending, clearPending, nodeById,
   const [input, setInput] = useState("");
   const [busy, setBusy] = useState(false);
   const [mode, setMode] = useState<"live" | "offline" | null>(null);
+  const [voice, setVoice] = useState(false);
+  const [listening, setListening] = useState(false);
+  const [canListen, setCanListen] = useState(false);
+  const recRef = useRef<{ start: () => void; stop: () => void } | null>(null);
   const scroller = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -42,7 +46,28 @@ export default function Jarvis({ open, setOpen, pending, clearPending, nodeById,
 
   useEffect(() => {
     if (open) setTimeout(() => inputRef.current?.focus(), 50);
+    else window.speechSynthesis?.cancel();
   }, [open]);
+
+  useEffect(() => {
+    const w = window as unknown as { SpeechRecognition?: new () => SpeechRec; webkitSpeechRecognition?: new () => SpeechRec };
+    const Ctor = w.SpeechRecognition ?? w.webkitSpeechRecognition;
+    if (!Ctor) return;
+    const rec = new Ctor();
+    rec.lang = "en-IN";
+    rec.interimResults = true;
+    rec.onresult = (e) => {
+      const r = e.results[e.results.length - 1];
+      setInput(r[0].transcript);
+      if (r.isFinal) {
+        setVoice(true);
+        void askRef.current(r[0].transcript);
+      }
+    };
+    rec.onend = () => setListening(false);
+    recRef.current = rec;
+    setCanListen(true);
+  }, []);
 
   useEffect(() => {
     if (pending) {
@@ -77,6 +102,7 @@ export default function Jarvis({ open, setOpen, pending, clearPending, nodeById,
         acc += dec.decode(value, { stream: true });
         setMsgs([...history, { role: "assistant", content: acc }]);
       }
+      if (voiceRef.current) speak(acc);
       const ids = Array.from(acc.matchAll(NODE_TOKEN), (m) => m[1]).filter((id) => nodeById[id]);
       onMentions(Array.from(new Set(ids)));
     } catch {
@@ -85,6 +111,22 @@ export default function Jarvis({ open, setOpen, pending, clearPending, nodeById,
       setBusy(false);
     }
   }
+
+  const askRef = useRef(ask);
+  askRef.current = ask;
+  const voiceRef = useRef(voice);
+  voiceRef.current = voice;
+
+  const toggleMic = () => {
+    if (!recRef.current) return;
+    if (listening) recRef.current.stop();
+    else {
+      window.speechSynthesis?.cancel();
+      setInput("");
+      recRef.current.start();
+      setListening(true);
+    }
+  };
 
   const render = (text: string) =>
     text.split("\n").map((line, li) => {
@@ -138,10 +180,28 @@ export default function Jarvis({ open, setOpen, pending, clearPending, nodeById,
               </small>
             </div>
           </div>
-          <button className="icon-btn" onClick={() => setOpen(false)} aria-label="Close Jarvis">
-            ✕
-          </button>
+          <div className="jv-actions">
+            <button
+              className={"icon-btn" + (voice ? " on" : "")}
+              onClick={() => {
+                window.speechSynthesis?.cancel();
+                setVoice(!voice);
+              }}
+              aria-label={voice ? "Mute Jarvis voice" : "Let Jarvis speak"}
+              title={voice ? "Voice on" : "Voice off"}
+            >
+              {voice ? "🔊" : "🔈"}
+            </button>
+            <button className="icon-btn" onClick={() => setOpen(false)} aria-label="Close Jarvis">
+              ✕
+            </button>
+          </div>
         </header>
+        <div className={"jv-wave" + (busy || listening ? " live" : "")} aria-hidden="true">
+          {Array.from({ length: 32 }, (_, i) => (
+            <i key={i} style={{ animationDelay: `${(i % 8) * 70}ms` }} />
+          ))}
+        </div>
 
         <div className="jv-log" ref={scroller}>
           {msgs.length === 0 && (
@@ -173,12 +233,18 @@ export default function Jarvis({ open, setOpen, pending, clearPending, nodeById,
             void ask(input);
           }}
         >
-          <span className="prompt">›</span>
+          {canListen ? (
+            <button type="button" className={"mic" + (listening ? " on" : "")} onClick={toggleMic} aria-label="Speak your question">
+              ◉
+            </button>
+          ) : (
+            <span className="prompt">›</span>
+          )}
           <input
             ref={inputRef}
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            placeholder="Ask about any project, number or decision…"
+            placeholder={listening ? "Listening…" : "Ask, or tap ◉ and speak…"}
             disabled={busy}
             maxLength={500}
           />
@@ -194,4 +260,25 @@ export default function Jarvis({ open, setOpen, pending, clearPending, nodeById,
 function Bold({ text }: { text: string }) {
   const segs = text.split(/\*\*(.+?)\*\*/g);
   return <>{segs.map((s, i) => (i % 2 ? <strong key={i}>{s}</strong> : s))}</>;
+}
+
+interface SpeechRec {
+  lang: string;
+  interimResults: boolean;
+  onresult: (e: { results: ArrayLike<{ isFinal: boolean } & ArrayLike<{ transcript: string }>> }) => void;
+  onend: () => void;
+  start: () => void;
+  stop: () => void;
+}
+
+function speak(text: string) {
+  const synth = window.speechSynthesis;
+  if (!synth) return;
+  synth.cancel();
+  const clean = text.replace(NODE_TOKEN, "").replace(/\*\*/g, "").replace(/[•→]/g, ",");
+  const u = new SpeechSynthesisUtterance(clean);
+  const v = synth.getVoices().find((x) => /en-GB|Daniel|Google UK English Male/i.test(x.name + x.lang));
+  if (v) u.voice = v;
+  u.rate = 1.05;
+  synth.speak(u);
 }

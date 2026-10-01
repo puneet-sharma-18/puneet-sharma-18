@@ -37,6 +37,13 @@ Lines marked `// CONFIRM` are best guesses Puneet must check before the page is 
 | Play the journey | A timeline from 2016 to 2026; nodes appear as each chapter plays |
 | Jarvis | Chat grounded in the profile data; node mentions become buttons that move the map |
 | List view | A card layout for mobile and for skimming |
+| Ops console | Live pings to every production system (theZio, d2cinsider.ai, CRM…) with latency, plus a GitHub-style heatmap of 1,811 real commits |
+| ⌘K palette | Search every project, technology or action, the way Linear or Raycast do it |
+| Terminal (`` ` ``) | `neofetch`, `ls`, `cat thezio`, `git log`, `jarvis <q>`, `sudo hire puneet` |
+| Jarvis voice | Ask out loud with the mic and hear the answer read back; a waveform shows while it talks |
+| Visual layer | Starfield with mouse parallax, aurora, film grain, data packets moving along the lines between nodes, decrypting titles, gradient-glass panels, Geist + Instrument Serif type |
+
+`data/shiplog.json` holds the commit counts by day, taken from `git log` across all repos (jarvis-dashboard's automatic data commits are left out). Regenerate it before each submission.
 
 ## Next steps
 

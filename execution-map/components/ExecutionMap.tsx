@@ -204,13 +204,20 @@ export default function ExecutionMap({
         const nb = nodeById[e.to];
         if (!a || !b || !visible(na) || !visible(nb)) return null;
         const on = activeEdges.has(e.from + ">" + e.to);
+        const pid = `dna-${e.from}-${e.to}`;
+        const col = clusterById[na.cluster].color;
         return (
-          <path
-            key={e.from + e.to}
-            d={curve(a, b)}
-            className={"dna" + (on ? " on" : "") + (active && !on ? " dim" : "")}
-            stroke={clusterById[na.cluster].color}
-          />
+          <g key={pid}>
+            <path id={pid} d={curve(a, b)} className={"dna" + (on ? " on" : "") + (active && !on ? " dim" : "")} stroke={col} />
+            {/* Data packet travelling from cause to effect */}
+            {(!active || on) && (
+              <circle r={on ? 3.2 : 2} fill={col} className="packet">
+                <animateMotion dur={`${3 + ((e.from.length + e.to.length) % 5)}s`} repeatCount="indefinite">
+                  <mpath href={`#${pid}`} />
+                </animateMotion>
+              </circle>
+            )}
+          </g>
         );
       })}
 

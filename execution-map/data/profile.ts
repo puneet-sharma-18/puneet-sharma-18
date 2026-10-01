@@ -755,3 +755,14 @@ export const headline = [
   { value: "338k", label: "lines of code (TS/JS/Py/SQL/Kotlin/Swift)" }, // counted across all repos, Oct 2026
   { value: "100+", label: "founders trained" },
 ];
+
+/** Production systems pinged live by /api/status — the "proof it's running" panel. */
+export const systems = [
+  { name: "theZio", url: "https://thezio.co", node: "thezio" },
+  { name: "D2C Insider AI / Frontier", url: "https://d2cinsider.ai", node: "frontier" },
+  { name: "The Paan Legacy", url: "https://thepaanlegacy.com", node: "paan-legacy" },
+  { name: "Paan Legacy CRM", url: "https://crm.thepaanlegacy.com", node: "paan-crm" },
+  { name: "ConsumerX", url: "https://consumerx.vc", node: "consumerx" },
+  { name: "Troofrnd", url: "https://troofrnd.com", node: "troofrnd" },
+  { name: "ClaudeSkill", url: "https://claudeskill.co", node: "claudeskill" },
+];
