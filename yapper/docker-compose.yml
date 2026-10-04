@@ -1,0 +1,11 @@
+services:
+  yapper:
+    build: ./backend
+    env_file: ./backend/.env
+    environment:
+      YAPPER_DATA_DIR: /data
+    volumes:
+      - ./data:/data
+    ports:
+      - "8000:8000"
+    restart: unless-stopped
