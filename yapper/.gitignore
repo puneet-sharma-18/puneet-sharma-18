@@ -1,8 +1,0 @@
-.venv/
-__pycache__/
-*.pyc
-.pytest_cache/
-backend/.env
-backend/data/
-data/
-.DS_Store
