@@ -1,6 +1,0 @@
-symbol,entry_zone_low,entry_zone_high,stop,target,trigger
-BPCL,,,,,De-escalation candidate: set levels from the chart once Brent < $90 or ceasefire confirmed
-HINDPETRO,,,,,De-escalation candidate: same trigger as BPCL
-INDIGO,,,,,De-escalation candidate: most crude-sensitive large cap
-BERGEPAINT,,,,,Core-bucket tranche candidate if crude stabilises
-HAL,,,,,Track only; already re-rated on war news

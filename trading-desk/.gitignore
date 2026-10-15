@@ -1,8 +1,0 @@
-# Personal financial data: never commit to a public repo
-portfolio/holdings.csv
-reports/*
-!reports/.gitkeep
-journal/*.md
-!journal/TEMPLATE.md
-__pycache__/
-*.pyc
