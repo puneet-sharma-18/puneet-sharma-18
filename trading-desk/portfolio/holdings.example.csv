@@ -1,0 +1,6 @@
+symbol,qty,avg_price,bucket,stop,target,thesis
+NIFTYBEES,200,265.00,core,,,Nifty 50 core holding via monthly SIP
+INFY,20,1450.00,core,,,Quality IT compounder; weak INR tailwind
+ONGC,150,245.00,satellite,228,290,Oil-shock hedge while Brent > $95; exit on ceasefire
+INDIGO,10,4800.00,satellite,4400,5600,De-escalation trade; thesis broken if Brent > $115
+ASIANPAINT,15,2350.00,core,,,Long-term brand; buy in tranches while crude is high
