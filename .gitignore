@@ -1,0 +1,25 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+build/
+dist/
+.venv/
+venv/
+env/
+
+# Test / tooling
+.pytest_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# Secrets — never commit credentials
+.env
+*.cookies.json
+*.cookies.txt
+cookies.json
+cookies.txt
+client_secrets*.json
+token*.json
